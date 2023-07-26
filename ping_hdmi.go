@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"log"
 	"os/exec"
@@ -9,17 +10,21 @@ import (
 )
 
 func main() {
-	check := []byte("Monitors: 0")
+	soja := flag.Int("sleep", 5, "probing delay in seconds")
+	flag.Parse()
+
+	verifyString := []byte("Monitors: 1")
 	for {
-		out, err := exec.Command("xrandr", "--listmonitors").Output()
+		xrandrOutput, err := exec.Command("xrandr", "--listmonitors").Output()
 		if err != nil {
 			log.Fatal(err)
 		}
-		if bytes.Contains(out, check) {
+		if bytes.Contains(xrandrOutput, verifyString) {
 			fmt.Println("HDMI port connected")
 		} else {
-			fmt.Println("HDMI port not connected !")
+			fmt.Println("! HDMI port not connected !")
+			// issue shutdown
 		}
-		time.Sleep(10000)
+		time.Sleep(time.Second * time.Duration(*soja)) // strange behavior in Pi for 5 and 10 seconds
 	}
 }
